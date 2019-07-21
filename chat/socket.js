@@ -1,18 +1,18 @@
 
-const SocketIO = require('socket.io');
-const NetworkDefine = require('../constant/NetworkDefine')
+const NetworkDefine = require('../constant/NetworkDefine');
 
-module.exports = (server) => {
+module.exports = (io) => {
 
-    const io = SocketIO(server)
     const chat = io.of('/chat')
 
+    io.on('connection', (socket)=>{
+        console.log('/ *new client connect ', socket.id, socket.ip)
+    })
 
-    io.on('connection', (socket) => {
+    chat.on('connection', (socket) => {
         const req = socket.request;
         const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-        console.log('new client connect', ip, socket.id, req.ip)
-
+        console.log('/chat *new client connect ',socket.id, socket.ip)
 
         socket.on(NetworkDefine.CHAT_ROOM_JOIN, (data) => {
             console.log(data);
@@ -25,6 +25,7 @@ module.exports = (server) => {
         })
 
         socket.on(NetworkDefine.SEND_TEXT_MESSAGE, (data => {
+    
             console.log(data);
             socket.to(data.roomId).emit(NetworkDefine.RECEIVE_TEXT_MESSAGE, data);
         }))
